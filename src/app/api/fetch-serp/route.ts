@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerComponentClient } from "../../../lib/supabaseServer";
 import { fetchSerp } from "../../../lib/serpFetcher";
+import { calculateOpportunity } from "lib/scoring";
+import { computeIntent } from "lib/intent";
 
 // A small rotating list of free proxies.
 // These may be unreliable in practice and are only placeholders.
@@ -83,12 +85,12 @@ export async function POST(req: NextRequest) {
     let isLowAuthority = false;
 
     if (results.length > 0) {
-      // is_forum: if any result is from a known forum/community domain
+      // is_forum
       isForum = results.some((r) =>
         forums.some((domain) => r.domain.endsWith(domain)),
       );
 
-      // is_outdated: if any parsed date is older than 2 years
+      // is_outdated
       isOutdated = results.some((r) => {
         if (!r.published_at) return false;
         const parsed = Date.parse(r.published_at);
@@ -96,17 +98,19 @@ export async function POST(req: NextRequest) {
         return new Date(parsed) < twoYearsAgo;
       });
 
-      // is_thin: if the median snippet length is below 100 chars
+      // is_thin
       const lengths = results
         .map((r) => (r.snippet ?? "").length)
         .sort((a, b) => a - b);
+
       const median =
         lengths.length === 0
           ? 0
           : lengths[Math.floor(lengths.length / 2)] ?? 0;
+
       isThin = median < 100;
 
-      // is_low_authority: if any domain ends with low-trust TLDs
+      // is_low_authority
       const lowTlds = [".xyz", ".top"];
       isLowAuthority = results.some((r) =>
         lowTlds.some((tld) => r.domain.endsWith(tld)),
@@ -120,16 +124,28 @@ export async function POST(req: NextRequest) {
       is_low_authority: isLowAuthority,
     };
 
+    const { score, label } = calculateOpportunity({
+      forum_present: isForum,
+      outdated_present: isOutdated,
+      thin_content_present: isThin,
+      low_authority_present: isLowAuthority,
+      intent_mismatch: false,
+    });
+    const intent = computeIntent(keyword.text);
+
     const { error: keywordUpdateError } = await supabase
       .from("keywords")
       .update({
         last_serp_fetch: new Date().toISOString(),
         weak_signals: weakSignals,
+        opportunity_score: score,
+        opportunity_label: label,
+        intent: intent,
       })
       .eq("id", keywordId);
 
     if (keywordUpdateError) {
-      console.error("Error updating keyword weak_signals", keywordUpdateError);
+      console.error("Error updating keyword data", keywordUpdateError);
     }
 
     return NextResponse.json({ success: true });
@@ -141,4 +157,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

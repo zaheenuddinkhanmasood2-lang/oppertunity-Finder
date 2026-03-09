@@ -1,7 +1,6 @@
-import { notFound } from "next/navigation";
 import { createServerComponentClient } from "../../../lib/supabaseServer";
 import { GenerateKeywordsButton } from "./GenerateKeywordsButton";
-import { FetchSerpButton } from "./FetchSerpButton";
+import { KeywordsTable } from "./KeywordsTable";
 
 type PageProps = {
   params: {
@@ -31,10 +30,30 @@ export default async function NicheDetailPage({ params }: PageProps) {
 
   if (error) {
     console.error("Error loading niche", error);
+    return (
+      <section className="flex flex-1 flex-col items-center justify-center gap-3">
+        <h2 className="text-lg font-semibold text-zinc-100">
+          Unable to load this niche
+        </h2>
+        <p className="text-sm text-zinc-400">
+          There was a problem fetching details for this niche. Please go back
+          and try again.
+        </p>
+      </section>
+    );
   }
 
   if (!niche) {
-    notFound();
+    return (
+      <section className="flex flex-1 flex-col items-center justify-center gap-3">
+        <h2 className="text-lg font-semibold text-zinc-100">
+          Niche not found
+        </h2>
+        <p className="text-sm text-zinc-400">
+          This niche may have been deleted or is unavailable.
+        </p>
+      </section>
+    );
   }
 
   const { data: rawKeywords } = await supabase
@@ -73,55 +92,7 @@ export default async function NicheDetailPage({ params }: PageProps) {
         </div>
 
         {keywords.length > 0 ? (
-          <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900/60">
-            <table className="min-w-full divide-y divide-zinc-800 text-sm">
-              <thead className="bg-zinc-900/80">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                    Keyword
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                    Intent
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                    Opportunity
-                  </th>
-                  <th className="px-4 py-2 text-right text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                    Word Count
-                  </th>
-                  <th className="px-4 py-2 text-right text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-800">
-                {keywords.map((keyword) => (
-                  <tr key={keyword.id}>
-                    <td className="max-w-xs px-4 py-2 align-top text-zinc-100">
-                      <span className="line-clamp-2">{keyword.text}</span>
-                    </td>
-                    <td className="px-4 py-2 align-top text-xs text-zinc-400">
-                      {/* Placeholder for future intent classification */}
-                      {keyword.intent ?? "—"}
-                    </td>
-                    <td className="px-4 py-2 align-top text-xs text-zinc-400">
-                      {/* Placeholder for future opportunity scoring */}
-                      {keyword.opportunity_label ??
-                        (keyword.opportunity_score != null
-                          ? keyword.opportunity_score
-                          : "—")}
-                    </td>
-                    <td className="px-4 py-2 align-top text-right text-xs text-zinc-300">
-                      {keyword.word_count ?? "—"}
-                    </td>
-                    <td className="px-4 py-2 align-top text-right">
-                      <FetchSerpButton keywordId={keyword.id} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <KeywordsTable keywords={keywords} />
         ) : (
           <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-900/40 px-4 py-8 text-center text-sm text-zinc-400">
             No keywords yet. Use &quot;Generate Keywords&quot; to seed this

@@ -117,64 +117,66 @@ export function KeywordsTable({ keywords }: Props) {
     label: string | null,
     score: number | null,
   ) => {
-    if (!label && score == null) return "—";
+    if (!label && score == null) return (
+      <span className="text-zinc-500 text-xs">—</span>
+    );
 
     const base =
-      "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium";
+      "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold border transition-all duration-300 badge-glow";
 
-    let color = "bg-zinc-800 text-zinc-200 border border-zinc-700";
+    let color = "bg-zinc-800/50 text-zinc-300 border-zinc-600/50";
 
     if (label === "hot") {
-      color = "bg-red-500/20 text-red-300 border border-red-500/60";
+      color = "bg-red-500/20 text-red-300 border-red-500/60 glow-pink";
     } else if (label === "good") {
-      color = "bg-amber-500/20 text-amber-200 border border-amber-500/60";
+      color = "bg-amber-500/20 text-amber-200 border-amber-500/60 glow-amber";
     } else if (label === "average") {
-      color = "bg-sky-500/15 text-sky-200 border border-sky-500/50";
+      color = "bg-sky-500/15 text-sky-200 border-sky-500/50 glow-cyan";
     } else if (label === "competitive") {
-      color = "bg-zinc-800 text-zinc-300 border border-zinc-600";
+      color = "bg-zinc-700/60 text-zinc-200 border-zinc-600/80";
     }
 
     return (
       <span className={`${base} ${color}`}>
         {label ? label.toUpperCase() : "SCORED"}{" "}
         {score != null && (
-          <span className="ml-1 text-[10px] text-zinc-300/80">({score})</span>
+          <span className="ml-1 text-[10px] opacity-80">({score})</span>
         )}
       </span>
     );
   };
 
   const renderIntentBadge = (intent: string | null) => {
-    if (!intent) return <span className="text-xs text-zinc-500">—</span>;
+    if (!intent) return <span className="text-zinc-500 text-xs">—</span>;
 
     const base =
-      "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium";
+      "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold border transition-all duration-300";
 
-    let color = "bg-zinc-800 text-zinc-200 border border-zinc-700";
+    let color = "bg-zinc-800/50 text-zinc-300 border-zinc-600/50";
 
     if (intent === "informational") {
-      color = "bg-sky-500/20 text-sky-200 border border-sky-500/60";
+      color = "bg-sky-500/20 text-sky-200 border-sky-500/60 glow-cyan";
     } else if (intent === "commercial") {
-      color = "bg-emerald-500/20 text-emerald-200 border border-emerald-500/60";
+      color = "bg-emerald-500/20 text-emerald-200 border-emerald-500/60 glow-emerald";
     } else if (intent === "transactional") {
-      color = "bg-violet-500/20 text-violet-200 border border-violet-500/60";
+      color = "bg-violet-500/20 text-violet-200 border-violet-500/60 glow-purple";
     } else if (intent === "navigational") {
-      color = "bg-zinc-700/60 text-zinc-100 border border-zinc-500/80";
+      color = "bg-zinc-700/60 text-zinc-100 border-zinc-500/80";
     }
 
     return <span className={`${base} ${color}`}>{intent}</span>;
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col gap-2">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
               Opportunity
             </span>
             <select
-              className="h-8 rounded-full border border-zinc-700 bg-zinc-900 px-3 text-xs text-zinc-100 shadow-sm outline-none transition hover:border-zinc-500 focus:border-sky-500"
+              className="h-10 rounded-xl border border-zinc-700/50 glass px-4 text-sm text-zinc-100 outline-none transition hover:border-cyan-500/50 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
               value={opportunityFilter}
               aria-label="Filter by opportunity"
               onChange={(e) =>
@@ -191,12 +193,12 @@ export function KeywordsTable({ keywords }: Props) {
             </select>
           </div>
 
-          <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
+          <div className="flex flex-col gap-2">
+            <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
               Intent
             </span>
             <select
-              className="h-8 rounded-full border border-zinc-700 bg-zinc-900 px-3 text-xs text-zinc-100 shadow-sm outline-none transition hover:border-zinc-500 focus:border-sky-500"
+              className="h-10 rounded-xl border border-zinc-700/50 glass px-4 text-sm text-zinc-100 outline-none transition hover:border-cyan-500/50 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
               value={intentFilter}
               aria-label="Filter by intent"
               onChange={(e) =>
@@ -213,28 +215,28 @@ export function KeywordsTable({ keywords }: Props) {
             </select>
           </div>
 
-          <div className="flex gap-2">
-            <div className="flex flex-col gap-1">
-              <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
+          <div className="flex gap-3">
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
                 Min Words
               </span>
               <input
                 type="number"
                 inputMode="numeric"
-                className="h-8 w-20 rounded-full border border-zinc-700 bg-zinc-900 px-3 text-xs text-zinc-100 shadow-sm outline-none transition hover:border-zinc-500 focus:border-sky-500"
+                className="h-10 w-24 rounded-xl border border-zinc-700/50 glass px-4 text-sm text-zinc-100 outline-none transition hover:border-cyan-500/50 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
                 value={minWordCount}
                 onChange={(e) => setMinWordCount(e.target.value)}
                 placeholder="0"
               />
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-500">
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-zinc-400">
                 Max Words
               </span>
               <input
                 type="number"
                 inputMode="numeric"
-                className="h-8 w-20 rounded-full border border-zinc-700 bg-zinc-900 px-3 text-xs text-zinc-100 shadow-sm outline-none transition hover:border-zinc-500 focus:border-sky-500"
+                className="h-10 w-24 rounded-xl border border-zinc-700/50 glass px-4 text-sm text-zinc-100 outline-none transition hover:border-cyan-500/50 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
                 value={maxWordCount}
                 onChange={(e) => setMaxWordCount(e.target.value)}
                 placeholder="∞"
@@ -246,58 +248,67 @@ export function KeywordsTable({ keywords }: Props) {
         <button
           type="button"
           onClick={handleExportCsv}
-          className="inline-flex h-8 items-center justify-center rounded-full border border-zinc-700 px-3 text-xs font-medium text-zinc-100 shadow-sm transition hover:border-zinc-500 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="btn-glass inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
           disabled={filteredKeywords.length === 0}
         >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
           Export CSV
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900/60">
-        <table className="min-w-full divide-y divide-zinc-800 text-sm">
-          <thead className="bg-zinc-900/80">
+      <div className="glass rounded-2xl border border-white/10 overflow-hidden" style={{ background: 'var(--md-sys-color-surface-container)', borderColor: 'var(--md-sys-color-outline-variant)' }}>
+        <table className="min-w-full divide-y" style={{ borderColor: 'var(--md-sys-color-outline-variant)' }}>
+          <thead style={{ background: 'var(--md-sys-color-surface-container-high)' }}>
             <tr>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--md-sys-color-on-surface-variant)' }}>
                 Keyword
               </th>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--md-sys-color-on-surface-variant)' }}>
                 Intent
               </th>
-              <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--md-sys-color-on-surface-variant)' }}>
                 Opportunity
               </th>
-              <th className="px-4 py-2 text-right text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--md-sys-color-on-surface-variant)' }}>
                 Word Count
               </th>
-              <th className="px-4 py-2 text-right text-xs font-semibold uppercase tracking-wide text-zinc-400">
+              <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--md-sys-color-on-surface-variant)' }}>
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800">
-            {filteredKeywords.map((keyword) => (
+          <tbody className="divide-y" style={{ borderColor: 'var(--md-sys-color-outline-variant)' }}>
+            {filteredKeywords.map((keyword, index) => (
               <tr
                 key={keyword.id}
                 onClick={() => setSelectedKeywordId(keyword.id)}
-                className="cursor-pointer transition hover:bg-zinc-800/50"
+                className="cursor-pointer transition-all duration-200 hover:bg-surface-container-high"
+                style={{ 
+                  animationDelay: `${index * 50}ms`,
+                  color: 'var(--md-sys-color-on-surface)'
+                }}
               >
-                <td className="max-w-xs px-4 py-2 align-top text-zinc-100">
-                  <span className="line-clamp-2">{keyword.text}</span>
+                <td className="max-w-xs px-6 py-4 align-top">
+                  <span className="text-zinc-100 font-medium line-clamp-2" style={{ color: 'var(--md-sys-color-on-surface)' }}>{keyword.text}</span>
                 </td>
-                <td className="px-4 py-2 align-top text-xs text-zinc-400">
+                <td className="px-6 py-4 align-top">
                   {renderIntentBadge(keyword.intent)}
                 </td>
-                <td className="px-4 py-2 align-top text-xs text-zinc-400">
+                <td className="px-6 py-4 align-top">
                   {renderOpportunityBadge(
                     keyword.opportunity_label,
                     keyword.opportunity_score,
                   )}
                 </td>
-                <td className="px-4 py-2 align-top text-right text-xs text-zinc-300">
-                  {keyword.word_count ?? "—"}
+                <td className="px-6 py-4 align-top text-right">
+                  <span className="font-medium" style={{ color: 'var(--md-sys-color-on-surface)' }}>
+                    {keyword.word_count ?? "—"}
+                  </span>
                 </td>
                 <td
-                  className="px-4 py-2 align-top text-right"
+                  className="px-6 py-4 align-top text-right"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <FetchSerpButton keywordId={keyword.id} />

@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { FetchSerpButton } from "./FetchSerpButton";
+import { KeywordDetailModal } from "./KeywordDetailModal";
 
 type Keyword = {
   id: string;
@@ -39,6 +41,7 @@ export function KeywordsTable({ keywords }: Props) {
     useState<(typeof INTENT_OPTIONS)[number]["value"]>("all");
   const [minWordCount, setMinWordCount] = useState<string>("");
   const [maxWordCount, setMaxWordCount] = useState<string>("");
+  const [selectedKeywordId, setSelectedKeywordId] = useState<string | null>(null);
 
   const filteredKeywords = useMemo(() => {
     const min = minWordCount === "" ? undefined : Number(minWordCount);
@@ -273,7 +276,11 @@ export function KeywordsTable({ keywords }: Props) {
           </thead>
           <tbody className="divide-y divide-zinc-800">
             {filteredKeywords.map((keyword) => (
-              <tr key={keyword.id}>
+              <tr
+                key={keyword.id}
+                onClick={() => setSelectedKeywordId(keyword.id)}
+                className="cursor-pointer transition hover:bg-zinc-800/50"
+              >
                 <td className="max-w-xs px-4 py-2 align-top text-zinc-100">
                   <span className="line-clamp-2">{keyword.text}</span>
                 </td>
@@ -289,7 +296,10 @@ export function KeywordsTable({ keywords }: Props) {
                 <td className="px-4 py-2 align-top text-right text-xs text-zinc-300">
                   {keyword.word_count ?? "—"}
                 </td>
-                <td className="px-4 py-2 align-top text-right">
+                <td
+                  className="px-4 py-2 align-top text-right"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <FetchSerpButton keywordId={keyword.id} />
                 </td>
               </tr>
@@ -297,6 +307,17 @@ export function KeywordsTable({ keywords }: Props) {
           </tbody>
         </table>
       </div>
+
+      {/* Keyword detail modal — rendered into document.body via portal */}
+      {selectedKeywordId &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <KeywordDetailModal
+            keywordId={selectedKeywordId}
+            onClose={() => setSelectedKeywordId(null)}
+          />,
+          document.body,
+        )}
     </div>
   );
 }

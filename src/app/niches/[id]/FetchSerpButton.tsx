@@ -26,7 +26,10 @@ export function FetchSerpButton({ keywordId }: Props) {
       });
 
       if (!res.ok) {
-        setError("Failed to fetch SERP. Please try again.");
+        // Try to get the real error message from the API
+        const json = await res.json().catch(() => null);
+        const msg = json?.error ?? `Server error (${res.status})`;
+        setError(msg);
         return;
       }
 
@@ -34,7 +37,7 @@ export function FetchSerpButton({ keywordId }: Props) {
       router.refresh();
     } catch (err) {
       console.error("Error calling fetch-serp API", err);
-      setError("Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }

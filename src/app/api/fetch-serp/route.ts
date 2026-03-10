@@ -4,18 +4,6 @@ import { fetchSerp } from "../../../lib/serpFetcher";
 import { calculateOpportunity } from "lib/scoring";
 import { computeIntent } from "lib/intent";
 
-// A small rotating list of free proxies.
-// These may be unreliable in practice and are only placeholders.
-const PROXIES: string[] = [
-  "http://51.158.169.123:3128",
-  "http://51.159.115.233:3128",
-  "http://213.59.156.119:3128",
-];
-
-function getRandomProxy() {
-  if (PROXIES.length === 0) return undefined;
-  return PROXIES[Math.floor(Math.random() * PROXIES.length)];
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -53,9 +41,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const proxy = getRandomProxy();
-
-    const results = await fetchSerp(keyword.text, proxy);
+    const results = await fetchSerp(keyword.text);
 
     // Insert SERP snapshot
     const { error: snapshotError } = await supabase
@@ -67,6 +53,10 @@ export async function POST(req: NextRequest) {
 
     if (snapshotError) {
       console.error("Error inserting SERP snapshot", snapshotError);
+      return NextResponse.json(
+        { error: `Failed to save SERP snapshot: ${snapshotError.message}` },
+        { status: 500 },
+      );
     }
 
     // Compute weak signals based on the results
@@ -150,10 +140,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("Unexpected error in fetch-serp API", err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Unexpected error in fetch-serp API", message);
     return NextResponse.json(
-      { error: "Invalid request" },
-      { status: 400 },
+      { error: message },
+      { status: 500 },
     );
   }
 }

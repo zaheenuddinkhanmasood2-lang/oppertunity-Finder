@@ -3,9 +3,9 @@ import { GenerateKeywordsButton } from "./GenerateKeywordsButton";
 import { KeywordsTable } from "./KeywordsTable";
 
 type PageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 type Keyword = {
@@ -18,7 +18,7 @@ type Keyword = {
 };
 
 export default async function NicheDetailPage({ params }: PageProps) {
-  const { id } = params;
+  const { id } = await params;
 
   const supabase = createServerComponentClient();
 

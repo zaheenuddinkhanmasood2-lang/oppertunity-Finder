@@ -60,12 +60,24 @@ export async function POST(req: NextRequest) {
     }
 
     // Compute weak signals based on the results
-    const forums = ["reddit.com", "quora.com", "medium.com"];
-
+    const forums = [
+      "reddit.com", "quora.com", "medium.com", "discord.com", "facebook.com",
+      "twitter.com", "instagram.com", "tiktok.com", "linkedin.com", "pinterest.com"
+    ];
+    
+    const questionIndicators = ["?", "how", "what", "when", "where", "why", "who"];
+    const lowAuthorityTlds = [".xyz", ".top", ".click", ".link", ".download", ".win"];
+    const contentFarmIndicators = ["wikihow", "answers.com", "ezinearticles", "hubpages"];
+    
     const now = new Date();
-    const twoYearsAgo = new Date(
-      now.getFullYear() - 2,
+    const oneYearAgo = new Date(
+      now.getFullYear() - 1,
       now.getMonth(),
+      now.getDate(),
+    );
+    const sixMonthsAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - 6,
       now.getDate(),
     );
 
@@ -73,22 +85,41 @@ export async function POST(req: NextRequest) {
     let isOutdated = false;
     let isThin = false;
     let isLowAuthority = false;
+    let hasQuestionIntent = false;
+    let hasContentFarm = false;
+    let hasRecentContent = false;
 
     if (results.length > 0) {
-      // is_forum
+      // is_forum - expanded to include social platforms
       isForum = results.some((r) =>
-        forums.some((domain) => r.domain.endsWith(domain)),
+        forums.some((domain) => r.domain.includes(domain)),
       );
 
-      // is_outdated
+      // has_question_intent - check if results contain Q&A content
+      hasQuestionIntent = results.some((r) => 
+        questionIndicators.some(indicator => 
+          r.title.toLowerCase().includes(indicator) || 
+          r.snippet.toLowerCase().includes(indicator)
+        )
+      );
+
+      // is_outdated - more lenient (1 year instead of 2)
       isOutdated = results.some((r) => {
         if (!r.published_at) return false;
         const parsed = Date.parse(r.published_at);
         if (Number.isNaN(parsed)) return false;
-        return new Date(parsed) < twoYearsAgo;
+        return new Date(parsed) < oneYearAgo;
       });
 
-      // is_thin
+      // has_recent_content - check for very recent content (opportunity indicator)
+      hasRecentContent = results.some((r) => {
+        if (!r.published_at) return false;
+        const parsed = Date.parse(r.published_at);
+        if (Number.isNaN(parsed)) return false;
+        return new Date(parsed) > sixMonthsAgo;
+      });
+
+      // is_thin - adjusted threshold (80 characters instead of 100)
       const lengths = results
         .map((r) => (r.snippet ?? "").length)
         .sort((a, b) => a - b);
@@ -98,12 +129,17 @@ export async function POST(req: NextRequest) {
           ? 0
           : lengths[Math.floor(lengths.length / 2)] ?? 0;
 
-      isThin = median < 100;
+      isThin = median < 80;
 
-      // is_low_authority
-      const lowTlds = [".xyz", ".top"];
+      // is_low_authority - expanded TLD list and content farm detection
       isLowAuthority = results.some((r) =>
-        lowTlds.some((tld) => r.domain.endsWith(tld)),
+        lowAuthorityTlds.some((tld) => r.domain.endsWith(tld)) ||
+        contentFarmIndicators.some((indicator) => r.domain.toLowerCase().includes(indicator))
+      );
+      
+      // has_content_farm - separate detection for content farms
+      hasContentFarm = results.some((r) =>
+        contentFarmIndicators.some((indicator) => r.domain.toLowerCase().includes(indicator))
       );
     }
 
@@ -112,6 +148,9 @@ export async function POST(req: NextRequest) {
       is_outdated: isOutdated,
       is_thin: isThin,
       is_low_authority: isLowAuthority,
+      has_question_intent: hasQuestionIntent,
+      has_content_farm: hasContentFarm,
+      has_recent_content: hasRecentContent,
     };
 
     const { score, label } = calculateOpportunity({
@@ -120,6 +159,9 @@ export async function POST(req: NextRequest) {
       thin_content_present: isThin,
       low_authority_present: isLowAuthority,
       intent_mismatch: false,
+      question_intent_present: hasQuestionIntent,
+      content_farm_present: hasContentFarm,
+      recent_content_present: hasRecentContent,
     });
     const intent = computeIntent(keyword.text);
 

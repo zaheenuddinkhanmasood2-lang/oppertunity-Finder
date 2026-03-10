@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerComponentClient } from "../../../lib/supabaseServer";
+import { computeIntent } from "lib/intent";
 
 const QUESTION_WORDS = ["who", "what", "where", "when", "why", "how"];
 const LETTER_PREFIXES = Array.from({ length: 26 }, (_, i) =>
@@ -80,11 +81,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ inserted: 0 });
     }
 
-    const rows = all.map((text) => ({
-      niche_id: niche.id,
-      text,
-      word_count: text.split(/\s+/).filter(Boolean).length,
-    }));
+    const rows = all.map((text) => {
+      const intent = computeIntent(text);
+      return {
+        niche_id: niche.id,
+        text,
+        word_count: text.split(/\s+/).filter(Boolean).length,
+        intent,
+      };
+    });
 
     const { error: insertError } = await supabase.from("keywords").insert(rows);
 
